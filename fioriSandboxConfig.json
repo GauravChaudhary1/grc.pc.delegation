@@ -1,0 +1,16 @@
+{
+	"applications": {
+	"app2-display": {
+			"additionalInformation": "SAPUI5.Component=app2.app2",
+			"applicationType": "URL",
+			"url": "../app2",
+			"description": "Fiori application app2. Can be navigated to by using the intent 'app2-display'.",
+			"title": "app2"
+		}},
+	"bootstrapPlugins": {
+		"pc.grc.delegation": {
+			"component": "com.grc.pc.delegation",
+			"url": "../../../../../"
+		}
+	}
+}

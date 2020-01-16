@@ -1,0 +1,23 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<SelectDialog
+		id = "delChange"
+		title="{i18n>title}"
+		search="handleSearch"
+		confirm="handleClose"
+		cancel="handleClose"
+		
+		items="{
+			path : '/UserSet'
+		}"
+		>
+		<StandardListItem
+			title="{Fullname}"
+			description="{Userid}"
+			icon="sap-icon://employee"
+			iconDensityAware="false"
+			iconInset="false"
+			type="Active" />
+	</SelectDialog>
+</core:FragmentDefinition>
