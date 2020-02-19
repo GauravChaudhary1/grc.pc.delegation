@@ -33,7 +33,7 @@ sap.ui.define([
 			var oService = new sap.ushell.services.URLParsing();
 			this.semanticObject = oService.getShellHash(window.location.href);
 			if (this.semanticObject !== "Shell-home") {
-				console.log("entered Init")
+				// console.log("entered Init")
 				var appMeta = {};
 				appMeta.sShellHash = this.semanticObject;
 				this.onAppOpened(null, null, appMeta, null);
@@ -66,33 +66,34 @@ sap.ui.define([
 			);
 		},
 
-		onAppOpened: async function (e1, e2, appMeta, e4) {
-			console.log("AppOpened");
-			await this._createSubHeader().then((b) => {
+		onAppOpened: function (e1, e2, appMeta, e4) {
+			var that = this;
+			// 			console.log("AppOpened");
+			this._createSubHeader()
+				.then(function () {
+					return that.readSemObjs();
+				})
+				.then(function (arr) {
+					// 	console.log("entered");
+					var sSem, sHash, sFhash;
+					sHash = appMeta["sShellHash"];
+					if (!sHash)
+						sFhash = appMeta["sFixedShellHash"];
 
-			});
+					if (sHash) {
+						sSem = sHash.split("-")[0];
+					} else if (sFhash) {
+						sSem = sFhash.split("-")[0];
+					}
+					// 	sSem = "ControlTest1";
+					sSem = sSem.replace(/[^\w\s]/gi, '');
+					if (that.searchSemanticObject(sSem, arr) === true) {
+						that.oRenderer.showSubHeader(["idDelBar"], false, ["app"]);
+					} else {
+						that.oRenderer.hideSubHeader(["idDelBar"], false, ["app"]);
+					}
 
-			await this.readSemObjs().then((arr) => {
-				console.log("entered");
-				var sSem, sHash, sFhash;
-				sHash = appMeta["sShellHash"];
-				if (!sHash)
-					sFhash = appMeta["sFixedShellHash"];
-
-				if (sHash) {
-					sSem = sHash.split("-")[0];
-				} else if (sFhash) {
-					sSem = sFhash.split("-")[0];
-				};
-
-				sSem = sSem.replace(/[^\w\s]/gi, '');
-				if (this.searchSemanticObject(sSem, arr) == true) {
-					this.oRenderer.showSubHeader(["idDelBar"], false, ["app"]);
-				} else {
-					this.oRenderer.hideSubHeader(["idDelBar"], false, ["app"]);
-				}
-
-			});
+				});
 
 		},
 
@@ -108,12 +109,12 @@ sap.ui.define([
 
 		readSemObjs: function () {
 			var that = this;
-			return new Promise((resolve, reject) => {
+			return new Promise(function (resolve, reject) {
 				if (!that.semObjs) {
-					this.oModel2.read("/SEM_OBJECTSSet", {
+					that.oModel2.read("/SEM_OBJECTSSet", {
 						success: function (oData, oResponse) {
 							that.semObjs = oData.results;
-							console.log("resolved");
+							// 			console.log("resolved");
 							resolve(oData.results);
 						}
 					});
@@ -125,37 +126,37 @@ sap.ui.define([
 		_createSubHeader: function () {
 			var that = this;
 			var oRenderer = this.oRenderer;
-			return new Promise((resolve, reject) => {
+			return new Promise(function (resolve, reject) {
 				var oTitle, oLink;
-				if(!that.subHeaderCreated){
-				that.oModel1.read("/DelegationSet", {
-					success: function (oData, response) {
-						that.username = oData.results[0].username;
-						var text = ((oData.results[0].delegate) ? "own_text" : "delegation_text");
-						oTitle = new sap.m.Title("delText", {
-							text: that.i18nModel.getResourceBundle().getText(text, [oData.results[0].fullname])
-						});
-						oLink = new sap.m.Link("idLink", {
-							text: that.i18nModel.getResourceBundle().getText("delegation"),
-							press: () => that.buildDialog()
-						});
-						oRenderer.addSubHeader("sap.m.Bar", {
-							id: "idDelBar",
-							contentRight: [oTitle, oLink]
-						}, true, false, [sap.ushell.renderers.fiori2.RendererExtensions.LaunchpadState.App]);
-						console.log("Subheader added");
-						oRenderer.hideSubHeader(["idDelBar"], false, ["app"]);
-						that.subHeaderCreated = true;
-						resolve(true);
-					},
+				if (!that.subHeaderCreated) {
+					that.oModel1.read("/DelegationSet", {
+						success: function (oData, response) {
+							that.username = oData.results[0].username;
+							var text = ((oData.results[0].delegate) ? "own_text" : "delegation_text");
+							oTitle = new sap.m.Title("delText", {
+								text: that.i18nModel.getResourceBundle().getText(text, [oData.results[0].fullname])
+							});
+							oLink = new sap.m.Link("idLink", {
+								text: that.i18nModel.getResourceBundle().getText("delegation"),
+								press: function () {
+									that.buildDialog();
+								}
+							});
+							oRenderer.addSubHeader("sap.m.Bar", {
+								id: "idDelBar",
+								contentRight: [oTitle, oLink]
+							}, true, false, [sap.ushell.renderers.fiori2.RendererExtensions.LaunchpadState.App]);
+							// 			console.log("Subheader added");
+							oRenderer.hideSubHeader(["idDelBar"], false, ["app"]);
+							that.subHeaderCreated = true;
+							resolve(true);
+						},
 
-					error: function (e) {
-						reject(true);
-					}
-				});
-				}
-				else
-				{
+						error: function (e) {
+							reject(true);
+						}
+					});
+				} else {
 					resolve(true);
 				}
 			});
